@@ -26,3 +26,29 @@ private extension FlickrPhotosViewController{
         return searches[(indexPath as NSIndexPath).section].searchResults[(indexPath as NSIndexPath).row]
     }
 }
+
+extension FlickrPhotosViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        textField.addSubview(activityIndicator)
+        activityIndicator.frame = textField.bounds
+        activityIndicator.startAnimating()
+        
+        flickr.searchFlickrForTerm(textField.text!) {
+            results, error in
+            activityIndicator.removeFromSuperview()
+            if let error = error {
+                print("Error searchinch: \(error)")
+                return
+            }
+            if let results = results {
+                print("Found \(results.searchResults.count) matching \(results.searchTerm)")
+                self.searches.insert(results, at: 0)
+                self.collectionView?.reloadData()
+            }
+        }
+        textField.text = nil
+        textField.resignFirstResponder()
+        return true
+    }
+}
