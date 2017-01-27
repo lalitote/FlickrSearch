@@ -16,6 +16,8 @@ class FlickrPhotosViewController: UICollectionViewController {
     fileprivate var searches = [FlickrSearchResults]()
     fileprivate let flickr = Flickr()
     fileprivate let itemsPerRow: CGFloat = 3
+    fileprivate var selectedPhotos = [FlickrPhoto]()
+    fileprivate let shareTextLabel = UILabel()
     
     var largePhotoIndexPath: IndexPath? {
         didSet {
@@ -39,12 +41,72 @@ class FlickrPhotosViewController: UICollectionViewController {
         }
     }
     
+    var sharing: Bool = false {
+        didSet {
+            collectionView?.allowsMultipleSelection = sharing
+            collectionView?.selectItem(at: nil, animated: true, scrollPosition: UICollectionViewScrollPosition())
+            selectedPhotos.removeAll(keepingCapacity: false)
+            
+            guard let shareButton = self.navigationItem.rightBarButtonItems?.first else {
+                return
+            }
+            
+            guard sharing else {
+                navigationItem.setRightBarButtonItems([shareButton], animated: true)
+                return
+            }
+            
+            if let _ = largePhotoIndexPath {
+                largePhotoIndexPath = nil
+            }
+            
+            upadateSharedPhotoCount()
+            let sharingDetailItem = UIBarButtonItem(customView: shareTextLabel)
+            navigationItem.setRightBarButtonItems([shareButton, sharingDetailItem], animated: true)
+        }
     }
 
+    @IBAction func share(_ sender: UIBarButtonItem) {
+        guard !searches.isEmpty else {
+            return
+        }
+        
+        guard !selectedPhotos.isEmpty else {
+            sharing = !sharing
+            return
+        }
+        
+        guard sharing else {
+            return
+        }
+        var imageArray = [UIImage]()
+        for selectedPhoto in selectedPhotos {
+            if let thumbnail = selectedPhoto.thumbnail {
+                imageArray.append(thumbnail)
+            }
+        }
+        
+        if !imageArray.isEmpty {
+            let shareScreen = UIActivityViewController(activityItems: imageArray, applicationActivities: nil)
+            shareScreen.completionWithItemsHandler = { _ in
+                self.sharing = false
+            }
+            let popoverPresentationController = shareScreen.popoverPresentationController
+            popoverPresentationController?.barButtonItem = sender
+            popoverPresentationController?.permittedArrowDirections = .any
+            present(shareScreen, animated: true, completion: nil)
+        }
+    }
+}
 // MARK: - Private
 private extension FlickrPhotosViewController{
     func photoForIndexPath(indexPath: IndexPath) -> FlickrPhoto {
         return searches[(indexPath as NSIndexPath).section].searchResults[(indexPath as NSIndexPath).row]
+    }
+    func upadateSharedPhotoCount() {
+        shareTextLabel.textColor = themeColor
+        shareTextLabel.text = "\(selectedPhotos.count) photos selected"
+        shareTextLabel.sizeToFit()
     }
 }
 
@@ -131,8 +193,33 @@ extension FlickrPhotosViewController {
 // MARK: - UICollectionViewDelegate
 extension FlickrPhotosViewController {
     override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        guard !sharing else {
+            return true
+        }
         largePhotoIndexPath = largePhotoIndexPath == indexPath ? nil : indexPath
         return false
+    }
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard sharing else {
+            return
+        }
+        
+        let photo = photoForIndexPath(indexPath: indexPath)
+        selectedPhotos.append(photo)
+        upadateSharedPhotoCount()
+    }
+    override func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        guard sharing else {
+            return
+        }
+        
+        let photo = photoForIndexPath(indexPath: indexPath)
+        
+        if let index = selectedPhotos.index(of: photo) {
+            selectedPhotos.remove(at: index)
+            upadateSharedPhotoCount()
+        }
+        
     }
 }
 
