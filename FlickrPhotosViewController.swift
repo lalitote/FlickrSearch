@@ -17,7 +17,27 @@ class FlickrPhotosViewController: UICollectionViewController {
     fileprivate let flickr = Flickr()
     fileprivate let itemsPerRow: CGFloat = 3
     
-
+    var largePhotoIndexPath: IndexPath? {
+        didSet {
+            var indexPaths = [IndexPath]()
+            if let largePhotoIndexPath = largePhotoIndexPath {
+                indexPaths.append(largePhotoIndexPath)
+            }
+            if let oldValue = oldValue {
+                indexPaths.append(oldValue)
+            }
+            collectionView?.performBatchUpdates({
+                self.collectionView?.reloadItems(at: indexPaths)
+            }) { completed in
+                if let largePhotoIndexPath = self.largePhotoIndexPath {
+                    self.collectionView?.scrollToItem(
+                        at: largePhotoIndexPath,
+                        at: UICollectionViewScrollPosition.centeredVertically,
+                        animated: true)
+                }
+            }
+        }
+    }
     
     }
 
@@ -77,14 +97,57 @@ extension FlickrPhotosViewController {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! FlickrPhotoCell
         let flickrPhoto = photoForIndexPath(indexPath: indexPath)
-        cell.backgroundColor = UIColor.white
+        cell.activityIndicator.stopAnimating()
+        
+        guard indexPath == largePhotoIndexPath else {
+            cell.imageView.image = flickrPhoto.thumbnail
+            return cell
+        }
+        
+        guard flickrPhoto.largeImage == nil else {
+            cell.imageView.image = flickrPhoto.largeImage
+            return cell
+        }
+
         cell.imageView.image = flickrPhoto.thumbnail
+        cell.activityIndicator.startAnimating()
+        
+        flickrPhoto.loadLargeImage { loadedFlickrPhoto, error in
+            cell.activityIndicator.stopAnimating()
+            guard loadedFlickrPhoto.largeImage != nil && error == nil else {
+                return
+            }
+            if let cell = collectionView.cellForItem(at: indexPath) as? FlickrPhotoCell,
+                indexPath == self.largePhotoIndexPath {
+                cell.imageView.image = loadedFlickrPhoto.largeImage
+            }
+            
+        }
+        
         return cell
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+extension FlickrPhotosViewController {
+    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        largePhotoIndexPath = largePhotoIndexPath == indexPath ? nil : indexPath
+        return false
     }
 }
 
 extension FlickrPhotosViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        if indexPath == largePhotoIndexPath {
+            let flickrPhoto = photoForIndexPath(indexPath: indexPath)
+            var size = collectionView.bounds.size
+            size.height -= topLayoutGuide.length
+            size.height -= (sectionInsetes.top + sectionInsetes.right)
+            size.width -= (sectionInsetes.left + sectionInsetes.right)
+            return flickrPhoto.sizeToFillWidthOfSize(size)
+        }
+        
         let paddingSpace = sectionInsetes.left * (itemsPerRow + 1)
         let availableWidth = view.frame.width - paddingSpace
         let widthPerItem = availableWidth / itemsPerRow

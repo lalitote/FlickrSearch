@@ -25,19 +25,32 @@
                         </collectionViewFlowLayout>
                         <cells>
                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="FlickrCell" id="9MM-iP-Pa3" customClass="FlickrPhotoCell" customModule="FlickrSearch" customModuleProvider="target">
-                                <rect key="frame" x="87.5" y="90" width="200" height="200"/>
+                                <rect key="frame" x="88" y="90" width="200" height="200"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                     <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RPB-e5-cQf">
+                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RPB-e5-cQf">
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         </imageView>
+                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="P8r-zE-x96">
+                                            <rect key="frame" x="82" y="82" width="37" height="37"/>
+                                        </activityIndicatorView>
                                     </subviews>
                                 </view>
+                                <constraints>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerX" secondItem="RPB-e5-cQf" secondAttribute="centerX" id="IdR-L3-J2c"/>
+                                    <constraint firstItem="RPB-e5-cQf" firstAttribute="leading" secondItem="9MM-iP-Pa3" secondAttribute="leading" id="Lzh-Xb-HqI"/>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerX" secondItem="9MM-iP-Pa3" secondAttribute="centerX" id="XGa-iT-lYX"/>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerY" secondItem="9MM-iP-Pa3" secondAttribute="centerY" id="gXL-Ut-czt"/>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerX" secondItem="9MM-iP-Pa3" secondAttribute="centerX" id="sXw-TX-XdA"/>
+                                    <constraint firstItem="RPB-e5-cQf" firstAttribute="top" secondItem="9MM-iP-Pa3" secondAttribute="top" id="tNC-Fp-Rcw"/>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerY" secondItem="9MM-iP-Pa3" secondAttribute="centerY" id="wru-sW-wLT"/>
+                                    <constraint firstItem="P8r-zE-x96" firstAttribute="centerY" secondItem="RPB-e5-cQf" secondAttribute="centerY" id="yEy-NJ-utA"/>
+                                </constraints>
                                 <connections>
+                                    <outlet property="activityIndicator" destination="P8r-zE-x96" id="5Du-yi-xfV"/>
                                     <outlet property="imageView" destination="RPB-e5-cQf" id="fP6-I8-ad2"/>
                                 </connections>
                             </collectionViewCell>
@@ -69,7 +82,7 @@
                     <navigationItem key="navigationItem" id="3hW-xO-plr">
                         <nil key="title"/>
                         <textField key="titleView" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Search" textAlignment="natural" minimumFontSize="17" id="Y42-1B-ohh">
-                            <rect key="frame" x="112.5" y="7" width="150" height="30"/>
+                            <rect key="frame" x="113" y="7" width="150" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <nil key="textColor"/>
                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
